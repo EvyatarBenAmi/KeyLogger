@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Log</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>Log עבור {{ computer }} בתאריך {{ date }} שעה {{ hour }}:00</h2>
+    <a href="{{ url_for('hours', computer=computer, date=date) }}">חזור לשעות</a>
+    <div class="log-container">
+        {% for line in content %}
+        <div class="log-key">{{ line }}</div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>

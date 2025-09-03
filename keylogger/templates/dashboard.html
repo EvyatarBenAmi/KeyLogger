@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>Welcome {{ role }}</h2>
+    <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    <h3>מחשבים זמינים</h3>
+    <ul>
+        {% for computer in computers %}
+        <li><a href="{{ url_for('dates', computer=computer) }}">{{ computer }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>
