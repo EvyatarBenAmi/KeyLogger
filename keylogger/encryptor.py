@@ -1,35 +1,31 @@
-from cryptography.fernet import Fernet
-import os
-
+# פונקציה שמצפינה ומתרגמת כל תוכן על ידי נתינת מפתח
 class Encryptor:
-    KEY_FILE = "key.key"
-
-    @staticmethod
-    def load_key():
-        """טוען את המפתח מקובץ, או יוצר חדש אם אין."""
-        if not os.path.exists(Encryptor.KEY_FILE):
-            key = Fernet.generate_key()
-            with open(Encryptor.KEY_FILE, "wb") as f:
-                f.write(key)
+    def __init__(self, key):
+        # מקבלים את המפתח שיעשה בעצם את ההצפנה
+        if isinstance(key, str):
+            # המר את המחרוזת למספר באמצעות hash או קח רק את המספרים
+            try:
+                self.key = int(key) if key.isdigit() else hash(key) % 65536
+            except:
+                self.key = hash(key) % 65536
         else:
-            with open(Encryptor.KEY_FILE, "rb") as f:
-                key = f.read()
-        return key
+            self.key = key
 
-    @staticmethod
-    def encrypt(text: str) -> str:
-        key = Encryptor.load_key()
-        f = Fernet(key)
-        token = f.encrypt(text.encode())
-        return token.decode()
+    def transform(self, text: str) -> str:
+        # בשביל לעשות את ההמרה מה שעושים זה בעצם הופכים כל אות מהמילה שמקבלים לקוד יוניקוד ועושים הצפנת יוניקוד ומוסיפים את זה למערך אחרי שעושים המרה הפוכה
+        result = []
+        for char in text:
+            code = ord(char)
+            encrypted = code ^ self.key
+            # בודק שזה נמצא בתחום שצריך בקוד יוניקוד ולא יחזיר שגיאה
+            result.append(chr(encrypted % 0x110000))
+        return ''.join(result)
 
-    @staticmethod
-    def decrypt(token: str) -> str:
-        key = Encryptor.load_key()
-        f = Fernet(key)
-        try:
-            text = f.decrypt(token.encode())
-            return text.decode()
-        except:
-            # במקרה שהטקסט לא מוצפן
-            return token
+    def encrypt(self, text: str) -> str:
+        return self.transform(text)
+
+    def decrypt(self, text) -> str:
+        # ההמרה ההפוכה היא בדיוק אותו הדבר
+        return self.transform(text)
+
+

