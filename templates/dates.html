@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dates</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>תאריכים למחשב {{ computer }}</h2>
+    <a href="{{ url_for('dashboard') }}">חזור לדשבורד</a>
+    <ul>
+        {% for date in dates %}
+        <li><a href="{{ url_for('hours', computer=computer, date=date) }}">{{ date }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>
