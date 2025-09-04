@@ -4,7 +4,7 @@ from network_writer import NetworkWriter
 
 def main():
     # יוצר מצפין עם מפתח
-    encryptor = Encryptor("my-secret-key")
+    encryptor = Encryptor("12345")
 
     # שולח לשרת Flask (server.py)
     network_writer = NetworkWriter(
@@ -30,3 +30,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

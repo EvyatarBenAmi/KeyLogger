@@ -12,7 +12,7 @@ BASE_DIR = Path("logs")
 os.makedirs(BASE_DIR, exist_ok=True)
 
 # מפתח אחיד לפענוח (אותו מפתח כמו בלקוח!)
-ENCRYPTION_KEY = "my-secret-key"
+ENCRYPTION_KEY = "12345"
 decryptor = Encryptor(ENCRYPTION_KEY)
 
 # ---------------- API לקבלת לוגים ----------------
@@ -20,8 +20,10 @@ decryptor = Encryptor(ENCRYPTION_KEY)
 def receive_log():
     try:
         data = request.get_json()
+        print(data)
         computer = data.get("computer", "UNKNOWN")
         log = data.get("log")
+        # print(decryptor.decrypt(log))
         timestamp = datetime.now()
         date_str = timestamp.strftime("%Y-%m-%d")
         hour_str = timestamp.strftime("%H")
@@ -90,3 +92,5 @@ def view_log(computer, date, hour):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
+
+hello

